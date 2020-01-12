@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<AnchorPane xmlns="http://javafx.com/javafx/8.0.171"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="net.smackem.fxplayground.ExplosionController">
+    <padding>
+        <Insets bottom="4" left="4" right="4" top="4" />
+    </padding>
+    <StackPane style="-fx-background-color: black">
+        <Canvas fx:id="canvas" width="640" height="480" />
+    </StackPane>
+</AnchorPane>

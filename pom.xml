@@ -7,6 +7,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>11</maven.compiler.release>
+        <javafx.version>14</javafx.version>
         <project.runtime.mainClass>net.smackem.fxplayground.App</project.runtime.mainClass>
     </properties>
     <dependencies>
@@ -23,7 +24,12 @@
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
-            <version>${maven.compiler.release}</version>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.locationtech.jts</groupId>
+            <artifactId>jts-core</artifactId>
+            <version>1.16.1</version>
         </dependency>
     </dependencies>
     <build>

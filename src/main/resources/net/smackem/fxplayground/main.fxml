@@ -10,7 +10,8 @@
             fx:controller="net.smackem.fxplayground.MainController">
    <top>
       <ToolBar>
-         <Button text="Explosion" onAction="#showExplosion" />
+         <Button text="Explosion" onAction="#showStage" userData="explosion" />
+         <Button text="JTS" onAction="#showStage" userData="jts" />
       </ToolBar>
    </top>
 </BorderPane>

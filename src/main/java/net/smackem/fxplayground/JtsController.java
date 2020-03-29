@@ -53,12 +53,12 @@ public class JtsController {
 
     private static Collection<Shape> createShapes() {
         final GeometryFactory gf = new GeometryFactory();
-        final Geometry circle1 = createCircle(100, 80, 18);
-        final Geometry circle2 = createCircle(300, 260, 150);
-        final Geometry circle3 = createCircle(500, 10, 5);
-        final Geometry circle4 = createCircle(350, 240, 30);
-        final Geometry circle5 = createCircle(20, 400, 100);
-        final Geometry circle6 = createCircle(400, 300, 80);
+        final Geometry circle1 = createCircle(gf, 100, 80, 18);
+        final Geometry circle2 = createCircle(gf, 300, 260, 150);
+        final Geometry circle3 = createCircle(gf, 500, 10, 5);
+        final Geometry circle4 = createCircle(gf, 350, 240, 30);
+        final Geometry circle5 = createCircle(gf, 20, 400, 100);
+        final Geometry circle6 = createCircle(gf, 400, 300, 80);
         final Geometry line1 = createLine(gf, 0, 0, 600, 400);
         final Geometry line2 = createLine(gf, 500, 0, 0, 400);
         final Geometry intersection1 = circle1.intersection(line1);
@@ -97,7 +97,7 @@ public class JtsController {
                     random.nextInt(256),
                     random.nextInt(256),
                     0.6);
-            final var circle = new Shape(createCircle(x, y, radius), false, paint);
+            final var circle = new Shape(createCircle(gf, x, y, radius), false, paint);
             shapes.add(circle);
         }
         for (int i = 0; i < 10; i++) {
@@ -140,14 +140,10 @@ public class JtsController {
         });
     }
 
-    private static Geometry createCircle(double x, double y, double radius) {
-        final GeometricShapeFactory shapeFactory = new GeometricShapeFactory();
-        // maximum 64 points, climbing fast: 30 for radius 18
-        final int numPoints = (int)(Math.atan(radius / 20.0) * 64.0 / Math.atan(100));
-        shapeFactory.setNumPoints(Math.max(8, numPoints));
-        shapeFactory.setCentre(new Coordinate(x, y));
-        shapeFactory.setSize(radius * 2);
-        return shapeFactory.createCircle();
+    private static Geometry createCircle(GeometryFactory gf, double x, double y, double radius) {
+        // maximum 16 points per quadrant, climbing fast: 5 for radius 10
+        final int numPoints = (int)(Math.atan(radius / 20.0) * 16.0 / Math.atan(1000));
+        return gf.createPoint(new Coordinate(x, y)).buffer(radius, numPoints);
     }
 
     private static class Shape {

@@ -21,7 +21,7 @@ public class JtsController {
 
     @FXML
     private void initialize() {
-        this.shapes.addAll(createShapes2());
+        this.shapes.addAll(createRandomShapes());
         draw();
     }
 
@@ -43,8 +43,10 @@ public class JtsController {
         for (final var coordinate : shape.geometry.getCoordinates()) {
             gc.lineTo(coordinate.x, coordinate.y);
         }
-        gc.closePath();
-        gc.fill();
+        if (shape.geometry.getArea() > 0) {
+            gc.closePath();
+            gc.fill();
+        }
         gc.stroke();
         gc.restore();
     }
@@ -54,7 +56,7 @@ public class JtsController {
         final Geometry circle1 = createCircle(100, 80, 18);
         final Geometry circle2 = createCircle(300, 260, 150);
         final Geometry circle3 = createCircle(500, 10, 5);
-        final Geometry circle4 = createCircle(450, 40, 30);
+        final Geometry circle4 = createCircle(350, 240, 30);
         final Geometry circle5 = createCircle(20, 400, 100);
         final Geometry circle6 = createCircle(400, 300, 80);
         final Geometry line1 = createLine(gf, 0, 0, 600, 400);
@@ -62,6 +64,7 @@ public class JtsController {
         final Geometry intersection1 = circle1.intersection(line1);
         final Geometry intersection2 = line2.intersection(line1);
         final Geometry intersection3 = circle2.intersection(line2);
+        final Geometry intersection4 = circle2.intersection(circle6);
         intersection1.apply(AffineTransformation.translationInstance(10, 20));
         final Paint paint = Color.rgb(0xff, 0xc0, 0x00, 0.7);
         final Paint paintComputed = Color.rgb(0x40, 0x80, 0xff, 0.7);
@@ -76,41 +79,58 @@ public class JtsController {
                 new Shape(line2, false, paint),
                 new Shape(intersection1.buffer(5), true, paintComputed),
                 new Shape(intersection3.buffer(5), true, paintComputed),
-                new Shape(intersection2.buffer(5), true, paintComputed)
+                new Shape(intersection2.buffer(5), true, paintComputed),
+                new Shape(intersection4, true, paintComputed)
         );
     }
 
-    private static Collection<Shape> createShapes2() {
+    private static Collection<Shape> createRandomShapes() {
+        final GeometryFactory gf = new GeometryFactory();
         final List<Shape> shapes = new ArrayList<>();
         final var random = ThreadLocalRandom.current();
         for (int i = 0; i < 20; i++) {
             final int radius = random.nextInt(5, 100);
             final int x = random.nextInt(640);
             final int y = random.nextInt(480);
-            final Paint paint = Color.rgb(random.nextInt(256),
+            final Paint paint = Color.rgb(
+                    random.nextInt(256),
                     random.nextInt(256),
                     random.nextInt(256),
                     0.6);
-            shapes.add(new Shape(createCircle(x, y, radius), false, paint));
+            final var circle = new Shape(createCircle(x, y, radius), false, paint);
+            shapes.add(circle);
         }
-        final GeometryFactory gf = new GeometryFactory();
         for (int i = 0; i < 10; i++) {
             final int x1 = random.nextInt(640);
             final int y1 = random.nextInt(480);
             final int x2 = random.nextInt(640);
             final int y2 = random.nextInt(480);
-            final var line = new Shape(createLine(gf, x1, y1, x2, y2), false, Color.WHITE);
-            final int count = shapes.size();
-            for (int j = 0; j < count; j++) {
-                final var shape = shapes.get(j);
-                final var geometry = line.geometry.intersection(shape.geometry);
-                if (geometry instanceof LineString) {
-                    shapes.add(new Shape(geometry.buffer(5), true, Color.WHITE));
-                }
-            }
+            final var line = new Shape(createLine(gf, x1, y1, x2, y2), false, Color.BLACK);
             shapes.add(line);
+            intersectShape(line, shapes, gf);
         }
         return shapes;
+    }
+
+    private static void intersectShape(Shape shape, List<Shape> shapes, GeometryFactory gf) {
+        final int count = shapes.size();
+        for (int i = 0; i < count - 1; i++) {
+            final var shape2 = shapes.get(i);
+            final var geometry = shape.geometry.intersection(shape2.geometry);
+            if (geometry instanceof LineString) {
+                final var line = (LineString)geometry;
+                for (final var coordinate : line.getCoordinates()) {
+                    shapes.add(new Shape(
+                            gf.createPoint(coordinate).buffer(5), true, Color.BLACK));
+                }
+            } else if (geometry instanceof Point) {
+                final var point = (Point)geometry;
+                shapes.add(new Shape(point.buffer(5), true, Color.BLACK));
+            } else {
+                shapes.add(new Shape(geometry.buffer(5), true, Color.RED));
+                System.out.println(geometry.toString());
+            }
+        }
     }
 
     private static LineString createLine(GeometryFactory gf, double x1, double y1, double x2, double y2) {

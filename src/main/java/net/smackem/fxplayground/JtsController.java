@@ -65,6 +65,9 @@ public class JtsController {
         final Geometry intersection2 = line2.intersection(line1);
         final Geometry intersection3 = circle2.intersection(line2);
         final Geometry intersection4 = circle2.intersection(circle6);
+        intersection2.getCoordinate().x = 600;
+        intersection2.getCoordinate().y = 440;
+        intersection2.geometryChanged();
         intersection1.apply(AffineTransformation.translationInstance(10, 20));
         final Paint paint = Color.rgb(0xff, 0xc0, 0x00, 0.7);
         final Paint paintComputed = Color.rgb(0x40, 0x80, 0xff, 0.7);

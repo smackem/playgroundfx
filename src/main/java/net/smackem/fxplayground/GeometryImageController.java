@@ -1,23 +1,32 @@
 package net.smackem.fxplayground;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritablePixelFormat;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.util.AffineTransformation;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 public class GeometryImageController {
     private static final double CX_RATIO = 16.0;
     private static final double CY_RATIO = 16.0;
-    private Geometry geometry;
+    private Collection<Geometry> geometries = new ArrayList<>();
 
     @FXML
     private Canvas canvas;
@@ -26,7 +35,38 @@ public class GeometryImageController {
     private void initialize() {
     }
 
-    private Geometry importFromImage(Image image) {
+    private void render() {
+        final GraphicsContext gc = this.canvas.getGraphicsContext2D();
+        for (final Geometry geometry : this.geometries) {
+            renderShape(gc, geometry);
+        }
+    }
+
+    private void renderShape(GraphicsContext gc, Geometry geometry) {
+        gc.save();
+        gc.setFill(Color.LAWNGREEN);
+        gc.setStroke(Color.WHITE);
+        gc.setLineWidth(2.0);
+        gc.beginPath();
+        for (int i = 0; i < geometry.getNumGeometries(); i++) {
+            renderInnerGeometry(gc, geometry.getGeometryN(i));
+        }
+        gc.stroke();
+        gc.restore();
+    }
+
+    private void renderInnerGeometry(GraphicsContext gc, Geometry geometry) {
+        gc.beginPath();
+        for (final var coordinate : geometry.getCoordinates()) {
+            gc.lineTo(coordinate.x, coordinate.y);
+        }
+        if (geometry.getArea() > 0) {
+            gc.fill();
+        }
+        gc.stroke();
+    }
+
+    private Collection<Geometry> importFromImage(Image image) {
         final Collection<Geometry> geometries = new ArrayList<>();
         final int width = (int) image.getWidth();
         final int height = (int) image.getHeight();
@@ -49,7 +89,7 @@ public class GeometryImageController {
         int i = 0;
         for (int row = 0; row < height; row++) {
             for (int col = 0; col < width; col++) {
-                final int pixel = buffer[i];
+                final int pixel = buffer[i++];
                 final Color color = Color.rgb(
                         (pixel >> 16) & 0xff,
                         (pixel >> 8) & 0xff,
@@ -61,11 +101,11 @@ public class GeometryImageController {
                 geometry.apply(AffineTransformation.translationInstance(col * CX_RATIO, row * CY_RATIO));
                 geometry.geometryChanged();
                 geometries.add(geometry);
-                i++;
             }
         }
 
-        return unionGeometries(geometries);
+        //return geometries;
+        return Collections.singleton(unionGeometries(geometries));
     }
 
     private Geometry unionGeometries(Collection<Geometry> geometries) {
@@ -78,5 +118,19 @@ public class GeometryImageController {
             }
         }
         return firstGeometry;
+    }
+
+    @FXML
+    private void loadImage(ActionEvent actionEvent) throws IOException {
+        final FileChooser dialog = new FileChooser();
+        final File file = dialog.showOpenDialog(null);
+        if (file == null) {
+            return;
+        }
+        try (final InputStream is = new FileInputStream(file.getAbsoluteFile())) {
+            final Image image = new Image(is);
+            this.geometries.addAll(importFromImage(image));
+            render();
+        }
     }
 }

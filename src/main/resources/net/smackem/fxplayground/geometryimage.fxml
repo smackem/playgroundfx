@@ -18,4 +18,7 @@
     <StackPane style="-fx-background-color: black">
         <Canvas fx:id="canvas" width="640" height="480" />
     </StackPane>
+    <HBox AnchorPane.bottomAnchor="0" spacing="4">
+        <Button minWidth="70" text="Load Image..." onAction="#loadImage" />
+    </HBox>
 </AnchorPane>

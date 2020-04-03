@@ -5,6 +5,7 @@ import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritablePixelFormat;
 import javafx.scene.paint.Color;
@@ -12,7 +13,6 @@ import javafx.stage.FileChooser;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.util.AffineTransformation;
 
 import java.io.File;
@@ -38,20 +38,18 @@ public class GeometryImageController {
     private void render() {
         final GraphicsContext gc = this.canvas.getGraphicsContext2D();
         for (final Geometry geometry : this.geometries) {
-            renderShape(gc, geometry);
+            renderGeometry(gc, geometry);
         }
     }
 
-    private void renderShape(GraphicsContext gc, Geometry geometry) {
+    private void renderGeometry(GraphicsContext gc, Geometry geometry) {
         gc.save();
         gc.setFill(Color.LAWNGREEN);
         gc.setStroke(Color.WHITE);
         gc.setLineWidth(2.0);
-        gc.beginPath();
         for (int i = 0; i < geometry.getNumGeometries(); i++) {
             renderInnerGeometry(gc, geometry.getGeometryN(i));
         }
-        gc.stroke();
         gc.restore();
     }
 
@@ -64,6 +62,7 @@ public class GeometryImageController {
             gc.fill();
         }
         gc.stroke();
+        gc.closePath();
     }
 
     private Collection<Geometry> importFromImage(Image image) {
@@ -128,9 +127,18 @@ public class GeometryImageController {
             return;
         }
         try (final InputStream is = new FileInputStream(file.getAbsoluteFile())) {
-            final Image image = new Image(is);
+            final Image image = scaleImage(new Image(is));
             this.geometries.addAll(importFromImage(image));
             render();
         }
+    }
+
+    private static Image scaleImage(Image image) {
+        final ImageView imageView = new ImageView(image);
+        imageView.setPreserveRatio(true);
+        imageView.setFitWidth(40);
+        imageView.setFitHeight(30);
+        imageView.setSmooth(true);
+        return imageView.snapshot(null, null);
     }
 }

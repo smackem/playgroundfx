@@ -12,6 +12,7 @@
       <ToolBar>
          <Button text="Explosion" onAction="#showStage" userData="explosion" />
          <Button text="JTS" onAction="#showStage" userData="jts" />
+         <Button text="GeometryImage" onAction="#showStage" userData="geometryimage" />
       </ToolBar>
    </top>
 </BorderPane>

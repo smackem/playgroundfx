@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 public class GeometryImageController {
     private static final double CX_RATIO = 16.0;
@@ -104,7 +105,7 @@ public class GeometryImageController {
         }
 
         //return geometries;
-        return Collections.singleton(unionGeometries(geometries));
+        return List.of(unionGeometries(geometries));
     }
 
     private Geometry unionGeometries(Collection<Geometry> geometries) {

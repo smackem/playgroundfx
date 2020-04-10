@@ -9,17 +9,21 @@ public class LineProtocol implements Protocol {
 
     @Override
     public String readByte(byte b) {
-        if (b == '\n') {
-            final byte[] bytes = this.bos.toByteArray();
-            this.bos.reset();
-            return new String(bytes, StandardCharsets.UTF_8);
+        switch (b) {
+            case '\n' -> {
+                final byte[] bytes = this.bos.toByteArray();
+                this.bos.reset();
+                return new String(bytes, StandardCharsets.UTF_8).trim();
+            }
+            case '\r' -> {}
+            default -> bos.write(b);
         }
-        bos.write(b);
         return null;
     }
 
     @Override
     public ByteBuffer encodeMessage(String message) {
+        message = message + '\n';
         return ByteBuffer.wrap(message.getBytes(StandardCharsets.UTF_8));
     }
 }

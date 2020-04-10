@@ -20,28 +20,29 @@ public class LocalServer implements Flow.Publisher<String>, AutoCloseable {
     private final ServerSocketChannel acceptChannel;
     private final ByteBuffer buffer = ByteBuffer.allocate(1024);
     private final Collection<RemoteClient> clients = new ArrayList<>();
+    private final Executor executor;
 
     public LocalServer(int port, Executor executor) throws IOException {
         this.port = port;
+        this.executor = Objects.requireNonNull(executor);
         this.selector = Selector.open();
         this.acceptChannel = ServerSocketChannel.open()
-            .bind(new InetSocketAddress(this.port));
-        this.acceptChannel.configureBlocking(false);
-        this.acceptChannel.register(this.selector, this.acceptChannel.validOps());
+                .bind(new InetSocketAddress(this.port));
+        this.acceptChannel.configureBlocking(false)
+                .register(this.selector, this.acceptChannel.validOps());
         this.publisher = new SubmissionPublisher<>(executor, Flow.defaultBufferSize());
-        Objects.requireNonNull(executor).execute(this::run);
+        executor.execute(this::run);
     }
 
     private void run() {
         try {
-            //noinspection InfiniteLoopStatement
-            while (true) {
-                selectNextOp();
-            }
+            selectNextOp();
         }
         catch (IOException e) {
             e.printStackTrace();
+            return;
         }
+        this.executor.execute(this::run);
     }
 
     private void selectNextOp() throws IOException {

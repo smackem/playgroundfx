@@ -10,7 +10,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="playgroundfx" target="11" />
+      <module name="playgroundfx" target="14" />
     </bytecodeTargetLevel>
   </component>
 </project>

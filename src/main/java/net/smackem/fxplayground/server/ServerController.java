@@ -15,17 +15,15 @@ import java.util.concurrent.*;
 public class ServerController {
     private final ObservableList<String> messages = FXCollections.observableArrayList();
     private final LocalServer server;
-    private final ExecutorService executorService;
 
     @FXML
     private ListView<String> messagesList;
 
     public ServerController() {
-        this.executorService = Executors.newSingleThreadExecutor();
-        this.server = openServer(this.executorService);
+        this.server = openServer(PlatformExecutor.INSTANCE);
         if (this.server != null) {
             this.server.subscribe(new UnboundedSubscriber<>(item ->
-                    Platform.runLater(() -> this.messages.add(item))));
+                    this.messages.add(item.toString())));
         }
     }
 
@@ -52,12 +50,6 @@ public class ServerController {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-        this.executorService.shutdown();
-        try {
-            this.executorService.awaitTermination(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 }

@@ -60,7 +60,7 @@ public class LocalServer implements Flow.Publisher<Message.Base>, AutoCloseable 
 
     private void next() throws IOException {
         if (this.selector.select() == 0) {
-            // wakeup called or channel closed
+            // wakeup called, channel closed or timeout
             return;
         }
         final var iterator = this.selector.selectedKeys().iterator();
@@ -78,7 +78,7 @@ public class LocalServer implements Flow.Publisher<Message.Base>, AutoCloseable 
                     log.debug("read {} bytes from {}", this.buffer.position(), client);
                     this.buffer.clear();
                 } else {
-                    log.info("i/o end from {}", client);
+                    log.info("I/O end from {}", client);
                     closeClient(client);
                 }
             }

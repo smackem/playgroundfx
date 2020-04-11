@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 public class UnboundedSubscriber<T> implements Flow.Subscriber<T> {
     private final Logger log = LoggerFactory.getLogger(UnboundedSubscriber.class);
     private final Consumer<T> consumer;
+    private Flow.Subscription subscription;
 
     public UnboundedSubscriber(Consumer<T> consumer) {
         this.consumer = consumer;
@@ -17,13 +18,15 @@ public class UnboundedSubscriber<T> implements Flow.Subscriber<T> {
     @Override
     public void onSubscribe(Flow.Subscription subscription) {
         log.debug("onSubscribe");
-        subscription.request(Long.MAX_VALUE);
+        subscription.request(1);
+        this.subscription = subscription;
     }
 
     @Override
     public void onNext(T item) {
         log.debug("onNext {}", item);
         this.consumer.accept(item);
+        this.subscription.request(1);
     }
 
     @Override

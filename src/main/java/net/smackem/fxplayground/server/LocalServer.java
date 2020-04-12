@@ -111,6 +111,7 @@ public class LocalServer implements Flow.Publisher<Message.Base>, AutoCloseable 
         synchronized (this.monitor) {
             this.clients.remove(client);
         }
+        this.publisher.submit(new Message.ClientDisconnected(client.toString()));
     }
 
     void handleMessage(Message.Base message, RemoteClient origin) {
@@ -138,6 +139,7 @@ public class LocalServer implements Flow.Publisher<Message.Base>, AutoCloseable 
     public void close() throws IOException {
         log.info("close server");
         this.closed = true;
+        this.publisher.close();
         this.acceptChannel.close();
         synchronized (this.monitor) {
             for (final RemoteClient client : this.clients) {

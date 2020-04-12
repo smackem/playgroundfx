@@ -1,7 +1,6 @@
 package net.smackem.fxplayground.server;
 
 import java.io.IOException;
-import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channel;
 import java.nio.channels.SocketChannel;
@@ -10,11 +9,19 @@ public final class RemoteClient implements AutoCloseable {
     private final SocketChannel channel;
     private final Protocol protocol;
     private final LocalServer server;
+    private final String remoteAddress;
 
     RemoteClient(SocketChannel channel, Protocol protocol, LocalServer server) {
         this.channel = channel;
         this.protocol = protocol;
         this.server = server;
+        String remoteAddress;
+        try {
+            remoteAddress = channel.getRemoteAddress().toString();
+        } catch (IOException e) {
+            remoteAddress = "";
+        }
+        this.remoteAddress = remoteAddress;
     }
 
     Channel channel() {
@@ -52,12 +59,6 @@ public final class RemoteClient implements AutoCloseable {
 
     @Override
     public String toString() {
-        SocketAddress remoteAddress = null;
-        try {
-            remoteAddress = this.channel.getRemoteAddress();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return "RemoteClient{" + remoteAddress + "}";
+        return "RemoteClient{" + this.remoteAddress + "}";
     }
 }

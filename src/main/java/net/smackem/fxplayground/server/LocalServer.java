@@ -33,7 +33,7 @@ public class LocalServer implements Flow.Publisher<Message.Base>, AutoCloseable 
         this.acceptChannel.configureBlocking(false)
                 .register(this.selector, this.acceptChannel.validOps());
         this.publisher = new SubmissionPublisher<>(
-                executor != null ? executor : this.ioExecutorService,
+                executor != null ? executor : Runnable::run,
                 Flow.defaultBufferSize());
         this.ioExecutorService.submit(this::run);
     }
@@ -47,7 +47,7 @@ public class LocalServer implements Flow.Publisher<Message.Base>, AutoCloseable 
         try {
             next();
         } catch (IOException | ClosedSelectorException e) {
-            log.info("I/O broke", e);
+            log.info("I/O broke off", e);
             return;
         }
         if (this.closed) {
@@ -60,7 +60,7 @@ public class LocalServer implements Flow.Publisher<Message.Base>, AutoCloseable 
 
     private void next() throws IOException {
         if (this.selector.select() == 0) {
-            // wakeup called, channel closed or timeout
+            // wakeup called or channel closed
             return;
         }
         final var iterator = this.selector.selectedKeys().iterator();

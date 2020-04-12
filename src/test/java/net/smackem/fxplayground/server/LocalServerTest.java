@@ -8,10 +8,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
+import java.util.concurrent.*;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -22,9 +19,9 @@ public class LocalServerTest {
     @Test
     public void testLocalServer() throws IOException, InterruptedException {
         final Collection<Message.Base> receivedMessages = new ArrayList<>();
-        final Collection<Message.Base> messagesToSend = generateMessages(100_000);
+        final Collection<Message.Base> messagesToSend = generateMessages(10_000);
         final CountDownLatch latch = new CountDownLatch(messagesToSend.size());
-        try (final LocalServer server = new LocalServer(PORT, ForkJoinPool.commonPool())) {
+        try (final LocalServer server = new LocalServer(PORT)) {
             server.subscribe(new UnboundedSubscriber<>(item -> {
                 receivedMessages.add(item);
                 if (receivedMessages.size() % 500 == 0) {
@@ -39,6 +36,13 @@ public class LocalServerTest {
         assertThat(receivedMessages).hasSize(messagesToSend.size());
         assertThat(receivedMessages).containsExactly(
                 messagesToSend.toArray(Message.Base[]::new));
+    }
+
+    @Test
+    public void testLocalServerTiming() throws IOException, InterruptedException {
+        for (int i = 0; i < 50; i++) {
+            testLocalServer();
+        }
     }
 
     private Collection<Message.Base> generateMessages(int count) {

@@ -27,7 +27,7 @@ import java.util.List;
 public class GeometryImageController {
     private static final double CX_RATIO = 16.0;
     private static final double CY_RATIO = 16.0;
-    private Collection<Geometry> geometries = new ArrayList<>();
+    private final Collection<Geometry> geometries = new ArrayList<>();
 
     @FXML
     private Canvas canvas;

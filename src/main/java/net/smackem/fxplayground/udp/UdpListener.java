@@ -6,6 +6,7 @@ import java.net.SocketAddress;
 import java.net.StandardProtocolFamily;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Executor;
 
 public class UdpListener implements AutoCloseable {
@@ -25,11 +26,16 @@ public class UdpListener implements AutoCloseable {
             //noinspection InfiniteLoopStatement
             while (true) {
                 final SocketAddress remoteAddress = this.channel.receive(buffer);
-                final String message = buffer.flip().asCharBuffer().toString();
-                buffer.clear().asCharBuffer().put(message.toUpperCase());
-                this.channel.send(buffer, remoteAddress);
+                buffer.flip();
+                final String message = StandardCharsets.UTF_8.decode(buffer)
+                        .toString()
+                        .toUpperCase();
+                final ByteBuffer outBuffer = StandardCharsets.UTF_8.encode(message);
+                this.channel.send(outBuffer, remoteAddress);
             }
-        } catch (IOException ignored) {}
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

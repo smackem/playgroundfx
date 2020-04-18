@@ -44,7 +44,7 @@ public class UdpMultiListener implements AutoCloseable {
 
     @Override
     public void close() throws IOException, InterruptedException {
-        for (final var listener : listeners) {
+        for (final var listener : this.listeners) {
             listener.close();
         }
         executorService.shutdown();

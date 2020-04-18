@@ -15,6 +15,8 @@ import javafx.util.Duration;
 import net.smackem.fxplayground.App;
 import net.smackem.fxplayground.PlatformExecutor;
 import net.smackem.fxplayground.server.UnboundedSubscriber;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -22,6 +24,7 @@ import java.util.Objects;
 
 public class UdpController {
 
+    private static final Logger log = LoggerFactory.getLogger(UdpController.class);
     private final Timeline ticker;
     private final UdpMultiListener listener;
     private final LocalUdpClient client;
@@ -46,7 +49,7 @@ public class UdpController {
         this.listener = new UdpMultiListener(ports);
         this.client = new LocalUdpClient(ports);
         this.client.subscribe(new UnboundedSubscriber<>(this::onRemoteHostMessage));
-        this.ticker = new Timeline(new KeyFrame(Duration.seconds(10), this::tick));
+        this.ticker = new Timeline(new KeyFrame(Duration.seconds(3), this::tick));
         this.ticker.setCycleCount(Animation.INDEFINITE);
     }
 
@@ -59,8 +62,14 @@ public class UdpController {
                 .filter(remoteHost -> Objects.equals(remoteHost.remoteAddressProperty.get(), message.remoteAddress()))
                 .findFirst()
                 .ifPresentOrElse(
-                        remoteHost -> remoteHost.latestMessageProperty.set(message.text()),
-                        () -> this.remoteHosts.add(new RemoteHostViewModel(message.remoteAddress()))));
+                        remoteHost -> {
+                            log.debug("FOUND {}, saying {}", message.remoteAddress(), message.text());
+                            remoteHost.latestMessageProperty.set(message.text());
+                        },
+                        () -> {
+                            log.debug("NEW {}, saying {}", message.remoteAddress(), message.text());
+                            this.remoteHosts.add(new RemoteHostViewModel(message.remoteAddress()));
+                        }));
     }
 
     @FXML

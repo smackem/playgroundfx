@@ -46,7 +46,6 @@ public class LocalUdpClient implements AutoCloseable, Flow.Publisher<LocalUdpCli
         for (final var channel : channels) {
             try {
                 channel.write(buffer);
-                //buffer.reset();
             } catch (IOException ignored) { }
         }
     }
@@ -69,8 +68,10 @@ public class LocalUdpClient implements AutoCloseable, Flow.Publisher<LocalUdpCli
             if (key.isReadable()) {
                 final var channel = (DatagramChannel) key.channel();
                 final var address = channel.receive(this.buffer);
+                this.buffer.flip();
                 this.publisher.submit(new Message(address.toString(),
                         StandardCharsets.UTF_8.decode(this.buffer).toString()));
+                this.buffer.clear();
             }
             iter.remove();
         }

@@ -67,6 +67,7 @@ public class UdpController {
     private void initialize() {
         this.hostList.itemsProperty().set(this.remoteHosts);
         App.instance().scene().getWindow().setOnCloseRequest(this::onWindowClosed);
+        this.ticker.play();
     }
 
     private void onWindowClosed(WindowEvent windowEvent) {

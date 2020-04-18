@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
+import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ public class LocalUdpClient implements AutoCloseable, Flow.Publisher<LocalUdpCli
             final var channel = DatagramChannel.open()
                     .connect(new InetSocketAddress("localhost", port));
             channel.configureBlocking(false)
-                    .register(this.selector, channel.validOps());
+                    .register(this.selector, SelectionKey.OP_READ);
             this.channels.add(channel);
         }
         this.publisher = new SubmissionPublisher<>(Runnable::run, Flow.defaultBufferSize());
@@ -45,7 +46,7 @@ public class LocalUdpClient implements AutoCloseable, Flow.Publisher<LocalUdpCli
         for (final var channel : channels) {
             try {
                 channel.write(buffer);
-                buffer.reset();
+                //buffer.reset();
             } catch (IOException ignored) { }
         }
     }

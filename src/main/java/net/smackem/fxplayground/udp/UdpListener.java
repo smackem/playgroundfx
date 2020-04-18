@@ -17,34 +17,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class UdpListener implements AutoCloseable {
+
     private final DatagramChannel channel;
 
-    public static void main(String[] args) throws IOException, InterruptedException {
-        final int firstPort = Integer.parseInt(args[0]);
-        final int lastPort = firstPort + Integer.parseInt(args[1]);
-        final ExecutorService executorService = Executors.newCachedThreadPool();
-        final Collection<UdpListener> listeners = new ArrayList<>();
-        for (int port = firstPort; port < lastPort; port++) {
-            final UdpListener listener;
-            try {
-                listener = new UdpListener(port, executorService);
-            } catch (IOException e) {
-                e.printStackTrace();
-                break;
-            }
-            listeners.add(listener);
-        }
-        try (final var reader = new BufferedReader(new InputStreamReader(System.in))) {
-            reader.readLine();
-        }
-        for (final var listener : listeners) {
-            listener.close();
-        }
-        executorService.shutdown();
-        executorService.awaitTermination(10, TimeUnit.SECONDS);
-    }
-
-    private UdpListener(int port, Executor executor) throws IOException {
+    public UdpListener(int port, Executor executor) throws IOException {
         this.channel = DatagramChannel.open(StandardProtocolFamily.INET)
                 .bind(new InetSocketAddress(port));
         this.channel.configureBlocking(true);

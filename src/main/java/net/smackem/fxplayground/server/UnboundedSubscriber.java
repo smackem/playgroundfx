@@ -15,6 +15,14 @@ public class UnboundedSubscriber<T> implements Flow.Subscriber<T> {
         this.consumer = consumer;
     }
 
+    public void cancel() {
+        if (this.subscription == null) {
+            return;
+        }
+        this.subscription.cancel();
+        this.subscription = null;
+    }
+
     @Override
     public void onSubscribe(Flow.Subscription subscription) {
         log.debug("onSubscribe");

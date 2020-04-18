@@ -36,6 +36,20 @@ public class LocalUdpClient implements AutoCloseable, Flow.Publisher<LocalUdpCli
 
     public static record Message(String remoteAddress, String text) {}
 
+    public void sendToAll(String message) {
+        final ByteBuffer buffer = StandardCharsets.UTF_8.encode(message);
+        final Collection<DatagramChannel> channels;
+        synchronized (this.monitor) {
+            channels = List.copyOf(this.channels);
+        }
+        for (final var channel : channels) {
+            try {
+                channel.write(buffer);
+                buffer.reset();
+            } catch (IOException ignored) { }
+        }
+    }
+
     private void run() {
         try {
             this.next();

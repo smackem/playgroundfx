@@ -1,4 +1,4 @@
-package net.smackem.fxplayground.server;
+package net.smackem.fxplayground;
 
 import javafx.application.Platform;
 

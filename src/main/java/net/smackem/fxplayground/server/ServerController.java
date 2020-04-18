@@ -8,9 +8,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.stage.WindowEvent;
 import net.smackem.fxplayground.App;
+import net.smackem.fxplayground.PlatformExecutor;
 
 import java.io.IOException;
-import java.util.concurrent.*;
 
 public class ServerController {
     private final ObservableList<String> messages = FXCollections.observableArrayList();

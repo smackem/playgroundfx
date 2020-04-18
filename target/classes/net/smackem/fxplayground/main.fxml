@@ -14,6 +14,7 @@
          <Button text="JTS" onAction="#showStage" userData="jts" />
          <Button text="GeometryImage" onAction="#showStage" userData="geometryimage" />
          <Button text="Server" onAction="#showStage" userData="server/server" />
+         <Button text="UDP" onAction="#showStage" userData="udp/udp" />
       </ToolBar>
    </top>
 </BorderPane>

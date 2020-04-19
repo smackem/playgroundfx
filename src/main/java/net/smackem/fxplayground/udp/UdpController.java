@@ -80,7 +80,9 @@ public class UdpController {
                         },
                         () -> {
                             log.debug("NEW {}, saying {}", message.remoteAddress(), message.text());
-                            this.remoteHosts.add(new RemoteHostViewModel(message.remoteAddress()));
+                            final var remoteHost = new RemoteHostViewModel(message.remoteAddress());
+                            remoteHost.latestMessageProperty.set(message.text());
+                            this.remoteHosts.add(remoteHost);
                         }));
     }
 

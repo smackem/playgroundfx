@@ -35,7 +35,7 @@ public class UdpListener implements AutoCloseable {
                         .toString()
                         .toUpperCase();
                 buffer.clear();
-                log.debug("{} received {}", this.channel.getLocalAddress(), message);
+                log.debug("{} received {} from {}", this.channel.getLocalAddress(), message, remoteAddress);
                 final ByteBuffer outBuffer = StandardCharsets.UTF_8.encode(message);
                 this.channel.send(outBuffer, remoteAddress);
             }

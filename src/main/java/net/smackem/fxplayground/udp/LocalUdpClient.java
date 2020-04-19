@@ -35,7 +35,7 @@ public class LocalUdpClient implements AutoCloseable, Flow.Publisher<LocalUdpCli
         this.executorService.submit(this::run);
     }
 
-    public static record Message(String     remoteAddress, String text) {}
+    public static record Message(String remoteAddress, String text) {}
 
     public void sendToAll(String message) {
         final ByteBuffer buffer = StandardCharsets.UTF_8.encode(message);
@@ -64,7 +64,7 @@ public class LocalUdpClient implements AutoCloseable, Flow.Publisher<LocalUdpCli
         if (this.selector.select() == 0) {
             return;
         }
-        for (final var iter = this.selector.selectedKeys().iterator(); iter.hasNext(); ) {
+        for (final var iter = this.selector.selectedKeys().iterator(); iter.hasNext(); iter.remove()) {
             final var key = iter.next();
             if (key.isReadable()) {
                 final var channel = (DatagramChannel) key.channel();
@@ -74,7 +74,6 @@ public class LocalUdpClient implements AutoCloseable, Flow.Publisher<LocalUdpCli
                         StandardCharsets.UTF_8.decode(this.buffer).toString()));
                 this.buffer.clear();
             }
-            iter.remove();
         }
     }
 

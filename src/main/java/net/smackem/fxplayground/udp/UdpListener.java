@@ -1,5 +1,8 @@
 package net.smackem.fxplayground.udp;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -11,6 +14,7 @@ import java.util.concurrent.Executor;
 
 public class UdpListener implements AutoCloseable {
 
+    private static final Logger log = LoggerFactory.getLogger(UdpListener.class);
     private final DatagramChannel channel;
 
     public UdpListener(int port, Executor executor) throws IOException {
@@ -30,6 +34,8 @@ public class UdpListener implements AutoCloseable {
                 final String message = StandardCharsets.UTF_8.decode(buffer)
                         .toString()
                         .toUpperCase();
+                buffer.clear();
+                log.debug("{} received {}", this.channel.getLocalAddress(), message);
                 final ByteBuffer outBuffer = StandardCharsets.UTF_8.encode(message);
                 this.channel.send(outBuffer, remoteAddress);
             }

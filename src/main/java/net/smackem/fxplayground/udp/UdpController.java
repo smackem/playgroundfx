@@ -3,12 +3,14 @@ package net.smackem.fxplayground.udp;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
@@ -54,7 +56,17 @@ public class UdpController {
     }
 
     private void tick(ActionEvent actionEvent) {
-        this.client.sendToAll("Hello" + LocalDateTime.now().getSecond());
+        final String message = "Hello" + LocalDateTime.now().getSecond();
+        log.debug("sending {}", message);
+        this.client.sendToAll(message);
+    }
+
+    @FXML
+    private void initialize() {
+        this.hostList.itemsProperty().set(this.remoteHosts);
+        App.instance().scene().getWindow().setOnCloseRequest(this::onWindowClosed);
+        this.ticker.play();
+        this.hostList.setCellFactory(list -> new RemoteHostCell());
     }
 
     private void onRemoteHostMessage(LocalUdpClient.Message message) {
@@ -72,13 +84,6 @@ public class UdpController {
                         }));
     }
 
-    @FXML
-    private void initialize() {
-        this.hostList.itemsProperty().set(this.remoteHosts);
-        App.instance().scene().getWindow().setOnCloseRequest(this::onWindowClosed);
-        this.ticker.play();
-    }
-
     private void onWindowClosed(WindowEvent windowEvent) {
         this.ticker.stop();
         try {
@@ -87,5 +92,19 @@ public class UdpController {
         try {
             this.listener.close();
         } catch (IOException | InterruptedException ignored) { }
+    }
+
+    private static class RemoteHostCell extends ListCell<RemoteHostViewModel> {
+        @Override
+        protected void updateItem(RemoteHostViewModel remoteHost, boolean empty) {
+            super.updateItem(remoteHost, empty);
+            if (empty ) {
+                textProperty().unbind();
+                setText(null);
+                return;
+            }
+            textProperty().bind(Bindings.format("%s\n%s",
+                    remoteHost.remoteAddressProperty, remoteHost.latestMessageProperty));
+        }
     }
 }

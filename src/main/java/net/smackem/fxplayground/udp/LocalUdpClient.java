@@ -7,16 +7,16 @@ import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class LocalUdpClient implements AutoCloseable, Flow.Publisher<LocalUdpClient.Message> {
 
-    private final Object monitor = new Object();
     private final Selector selector;
-    private final Collection<DatagramChannel> channels = new ArrayList<>();
+    private final DatagramChannel channel;
+    private final Collection<InetSocketAddress> remoteAddresses;
     private final ExecutorService executorService;
     private final ByteBuffer buffer = ByteBuffer.allocate(16 * 1024);
     private final SubmissionPublisher<LocalUdpClient.Message> publisher;
@@ -24,13 +24,12 @@ public class LocalUdpClient implements AutoCloseable, Flow.Publisher<LocalUdpCli
     public LocalUdpClient(int... ports) throws IOException {
         this.executorService = Executors.newSingleThreadExecutor();
         this.selector = Selector.open();
-        for (final int port : ports) {
-            final var channel = DatagramChannel.open()
-                    .connect(new InetSocketAddress("localhost", port));
-            channel.configureBlocking(false)
-                    .register(this.selector, SelectionKey.OP_READ);
-            this.channels.add(channel);
-        }
+        this.channel = DatagramChannel.open();
+        channel.configureBlocking(false)
+                .register(this.selector, SelectionKey.OP_READ);
+        this.remoteAddresses = IntStream.of(ports)
+                .mapToObj(port -> new InetSocketAddress("localhost", port))
+                .collect(Collectors.toList());
         this.publisher = new SubmissionPublisher<>(Runnable::run, Flow.defaultBufferSize());
         this.executorService.submit(this::run);
     }
@@ -39,13 +38,9 @@ public class LocalUdpClient implements AutoCloseable, Flow.Publisher<LocalUdpCli
 
     public void sendToAll(String message) {
         final ByteBuffer buffer = StandardCharsets.UTF_8.encode(message);
-        final Collection<DatagramChannel> channels;
-        synchronized (this.monitor) {
-            channels = List.copyOf(this.channels);
-        }
-        for (final var channel : channels) {
+        for (final var remoteAddress : this.remoteAddresses) {
             try {
-                channel.write(buffer);
+                this.channel.send(buffer, remoteAddress);
                 buffer.rewind();
             } catch (IOException ignored) { }
         }
@@ -80,15 +75,9 @@ public class LocalUdpClient implements AutoCloseable, Flow.Publisher<LocalUdpCli
     @Override
     public void close() throws IOException, InterruptedException {
         this.publisher.close();
-        final Collection<DatagramChannel> channels;
-        synchronized (this.monitor) {
-            channels = List.copyOf(this.channels);
-        }
-        for (final var channel : channels) {
-            try {
-                channel.close();
-            } catch (IOException ignored) { }
-        }
+        try {
+            this.channel.close();
+        } catch (IOException ignored) { }
         this.selector.close();
         this.executorService.shutdown();
         this.executorService.awaitTermination(10, TimeUnit.SECONDS);

@@ -26,8 +26,7 @@ public class ServerController {
     public ServerController() {
         this.server = openServer();
         if (this.server != null) {
-            this.server.subscribe(new UnboundedSubscriber<>(item ->
-                    this.messages.add(item.toString())));
+            this.server.messageReceivedEvent().subscribe(item -> this.messages.add(item.toString()));
         }
     }
 

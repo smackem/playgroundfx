@@ -1,5 +1,6 @@
 package net.smackem.fxplayground.server;
 
+import net.smackem.fxplayground.events.SimpleEventSubscriber;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -22,7 +23,7 @@ public class LocalServerTest {
         final Collection<Message.Base> messagesToSend = generateMessages(10_000);
         final CountDownLatch latch = new CountDownLatch(1);
         try (final LocalServer server = new LocalServer(PORT)) {
-            server.subscribe(new UnboundedSubscriber<>(item -> {
+            server.messageReceivedEvent().subscribe(item -> {
                 if (item instanceof Message.ClientDisconnected) {
                     latch.countDown();
                     return;
@@ -31,7 +32,7 @@ public class LocalServerTest {
                 if (receivedMessages.size() % 500 == 0) {
                     System.out.printf("%d messages received\n", receivedMessages.size());
                 }
-            }));
+            });
             connectAndWrite(messagesToSend);
             assertThat(latch.await(1, TimeUnit.SECONDS)).isTrue();
         }

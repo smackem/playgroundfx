@@ -1,5 +1,8 @@
 package net.smackem.fxplayground.udp;
 
+import net.smackem.fxplayground.events.EventPublisher;
+import net.smackem.fxplayground.events.SimpleEventPublisher;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -12,14 +15,14 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class LocalUdpClient implements AutoCloseable, Flow.Publisher<LocalUdpClient.Message> {
+public class LocalUdpClient implements AutoCloseable {
 
     private final Selector selector;
     private final DatagramChannel channel;
     private final Collection<InetSocketAddress> remoteAddresses;
     private final ExecutorService executorService;
     private final ByteBuffer buffer = ByteBuffer.allocate(16 * 1024);
-    private final SubmissionPublisher<LocalUdpClient.Message> publisher;
+    private final SimpleEventPublisher<Message> messageReceived;
 
     public LocalUdpClient(int... ports) throws IOException {
         this.executorService = Executors.newSingleThreadExecutor();
@@ -30,8 +33,12 @@ public class LocalUdpClient implements AutoCloseable, Flow.Publisher<LocalUdpCli
         this.remoteAddresses = IntStream.of(ports)
                 .mapToObj(port -> new InetSocketAddress("localhost", port))
                 .collect(Collectors.toList());
-        this.publisher = new SubmissionPublisher<>(Runnable::run, Flow.defaultBufferSize());
+        this.messageReceived = new SimpleEventPublisher<>();
         this.executorService.submit(this::run);
+    }
+
+    public final EventPublisher<Message> messageReceivedEvent() {
+        return this.messageReceived;
     }
 
     public static record Message(String remoteAddress, String text) {}
@@ -65,7 +72,7 @@ public class LocalUdpClient implements AutoCloseable, Flow.Publisher<LocalUdpCli
                 final var channel = (DatagramChannel) key.channel();
                 final var address = channel.receive(this.buffer);
                 this.buffer.flip();
-                this.publisher.submit(new Message(address.toString(),
+                this.messageReceived.submit(new Message(address.toString(),
                         StandardCharsets.UTF_8.decode(this.buffer).toString()));
                 this.buffer.clear();
             }
@@ -74,17 +81,11 @@ public class LocalUdpClient implements AutoCloseable, Flow.Publisher<LocalUdpCli
 
     @Override
     public void close() throws IOException, InterruptedException {
-        this.publisher.close();
         try {
             this.channel.close();
         } catch (IOException ignored) { }
         this.selector.close();
         this.executorService.shutdown();
         this.executorService.awaitTermination(10, TimeUnit.SECONDS);
-    }
-
-    @Override
-    public void subscribe(Flow.Subscriber<? super Message> subscriber) {
-        this.publisher.subscribe(subscriber);
     }
 }

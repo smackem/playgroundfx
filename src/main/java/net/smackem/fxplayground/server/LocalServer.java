@@ -1,5 +1,8 @@
 package net.smackem.fxplayground.server;
 
+import net.smackem.fxplayground.events.EventPublisher;
+import net.smackem.fxplayground.events.SimpleEventPublisher;
+import net.smackem.fxplayground.events.SimpleEventSubscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,10 +15,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.*;
 
-public class LocalServer implements Flow.Publisher<Message.Base>, AutoCloseable {
+public class LocalServer implements AutoCloseable {
     private final Logger log = LoggerFactory.getLogger(LocalServer.class);
     private final Object monitor = new Object();
-    private final SubmissionPublisher<Message.Base> publisher;
+    private final SimpleEventPublisher<Message.Base> publisher;
     private final int port;
     private final Selector selector;
     private final ServerSocketChannel acceptChannel;
@@ -32,14 +35,16 @@ public class LocalServer implements Flow.Publisher<Message.Base>, AutoCloseable 
                 .bind(new InetSocketAddress(this.port));
         this.acceptChannel.configureBlocking(false)
                 .register(this.selector, this.acceptChannel.validOps());
-        this.publisher = new SubmissionPublisher<>(
-                executor != null ? executor : Runnable::run,
-                Flow.defaultBufferSize());
+        this.publisher = new SimpleEventPublisher<>();
         this.ioExecutorService.submit(this::run);
     }
 
     public LocalServer(int port) throws IOException {
         this(port, null);
+    }
+
+    public final EventPublisher<Message.Base> messageReceivedEvent() {
+        return this.publisher;
     }
 
     private void run() {
@@ -139,7 +144,6 @@ public class LocalServer implements Flow.Publisher<Message.Base>, AutoCloseable 
     public void close() throws IOException {
         log.info("close server");
         this.closed = true;
-        this.publisher.close();
         this.acceptChannel.close();
         synchronized (this.monitor) {
             for (final RemoteClient client : this.clients) {
@@ -158,11 +162,6 @@ public class LocalServer implements Flow.Publisher<Message.Base>, AutoCloseable 
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public void subscribe(Flow.Subscriber<? super Message.Base> subscriber) {
-        this.publisher.subscribe(subscriber);
     }
 
     @Override

@@ -16,7 +16,6 @@ import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 import net.smackem.fxplayground.App;
 import net.smackem.fxplayground.PlatformExecutor;
-import net.smackem.fxplayground.server.UnboundedSubscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +49,7 @@ public class UdpController {
         };
         this.listener = new UdpMultiListener(ports);
         this.client = new LocalUdpClient(ports);
-        this.client.subscribe(new UnboundedSubscriber<>(this::onRemoteHostMessage));
+        this.client.messageReceivedEvent().subscribe(this::onRemoteHostMessage);
         this.ticker = new Timeline(new KeyFrame(Duration.seconds(3), this::tick));
         this.ticker.setCycleCount(Animation.INDEFINITE);
     }

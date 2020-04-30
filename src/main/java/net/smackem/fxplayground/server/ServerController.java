@@ -26,7 +26,8 @@ public class ServerController {
     public ServerController() {
         this.server = openServer();
         if (this.server != null) {
-            this.server.messageReceivedEvent().subscribe(item -> this.messages.add(item.toString()));
+            this.server.messageReceivedEvent().subscribe(item ->
+                    PlatformExecutor.INSTANCE.execute(() -> this.messages.add(item.toString())));
         }
     }
 
@@ -40,7 +41,7 @@ public class ServerController {
 
     private LocalServer openServer() {
         try {
-            return new LocalServer(PORT, PlatformExecutor.INSTANCE);
+            return new LocalServer(PORT);
         } catch (IOException e) {
             e.printStackTrace();
         }

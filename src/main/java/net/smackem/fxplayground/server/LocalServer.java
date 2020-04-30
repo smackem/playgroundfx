@@ -2,7 +2,6 @@ package net.smackem.fxplayground.server;
 
 import net.smackem.fxplayground.events.EventPublisher;
 import net.smackem.fxplayground.events.SimpleEventPublisher;
-import net.smackem.fxplayground.events.SimpleEventSubscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +17,7 @@ import java.util.concurrent.*;
 public class LocalServer implements AutoCloseable {
     private final Logger log = LoggerFactory.getLogger(LocalServer.class);
     private final Object monitor = new Object();
-    private final SimpleEventPublisher<Message.Base> publisher;
+    private final SimpleEventPublisher<Message.Base> messageReceived;
     private final int port;
     private final Selector selector;
     private final ServerSocketChannel acceptChannel;
@@ -27,7 +26,7 @@ public class LocalServer implements AutoCloseable {
     private final ExecutorService ioExecutorService;
     private volatile boolean closed;
 
-    public LocalServer(int port, Executor executor) throws IOException {
+    public LocalServer(int port) throws IOException {
         this.port = port;
         this.ioExecutorService = Executors.newSingleThreadExecutor();
         this.selector = Selector.open();
@@ -35,16 +34,12 @@ public class LocalServer implements AutoCloseable {
                 .bind(new InetSocketAddress(this.port));
         this.acceptChannel.configureBlocking(false)
                 .register(this.selector, this.acceptChannel.validOps());
-        this.publisher = new SimpleEventPublisher<>();
+        this.messageReceived = new SimpleEventPublisher<>();
         this.ioExecutorService.submit(this::run);
     }
 
-    public LocalServer(int port) throws IOException {
-        this(port, null);
-    }
-
     public final EventPublisher<Message.Base> messageReceivedEvent() {
-        return this.publisher;
+        return this.messageReceived;
     }
 
     private void run() {
@@ -116,11 +111,11 @@ public class LocalServer implements AutoCloseable {
         synchronized (this.monitor) {
             this.clients.remove(client);
         }
-        this.publisher.submit(new Message.ClientDisconnected(client.toString()));
+        this.messageReceived.submit(new Message.ClientDisconnected(client.toString()));
     }
 
     void handleMessage(Message.Base message, RemoteClient origin) {
-        this.publisher.submit(message);
+        this.messageReceived.submit(message);
         final Collection<RemoteClient> clients;
         synchronized (this.monitor) {
             clients = List.copyOf(this.clients);

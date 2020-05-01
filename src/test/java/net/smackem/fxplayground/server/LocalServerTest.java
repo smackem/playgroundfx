@@ -1,6 +1,5 @@
 package net.smackem.fxplayground.server;
 
-import net.smackem.fxplayground.events.SimpleEventSubscriber;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -22,17 +21,14 @@ public class LocalServerTest {
         final Collection<Message.Base> receivedMessages = new ArrayList<>();
         final Collection<Message.Base> messagesToSend = generateMessages(10_000);
         final CountDownLatch latch = new CountDownLatch(1);
-        try (final LocalServer server = new LocalServer(PORT)) {
+        try (final LocalServer<Message.Base> server = new LocalServer<>(PORT, LineProtocol::new)) {
             server.messageReceivedEvent().subscribe(item -> {
-                if (item instanceof Message.ClientDisconnected) {
-                    latch.countDown();
-                    return;
-                }
                 receivedMessages.add(item);
                 if (receivedMessages.size() % 500 == 0) {
                     System.out.printf("%d messages received\n", receivedMessages.size());
                 }
             });
+            server.clientDisconnectedEvent().subscribe(ignored -> latch.countDown());
             connectAndWrite(messagesToSend);
             assertThat(latch.await(1, TimeUnit.SECONDS)).isTrue();
         }
@@ -45,7 +41,7 @@ public class LocalServerTest {
     public void testLocalServerDispatchToClient() throws IOException, InterruptedException {
         final Collection<Message.Base> messagesToSend = generateMessages(10_000);
         Collection<Message.Base> receivedMessages;
-        try (final LocalServer ignored = new LocalServer(PORT)) {
+        try (final LocalServer<Message.Base> ignored = new LocalServer<>(PORT, LineProtocol::new)) {
             final var future = connectAndRead(messagesToSend.size());
             connectAndWrite(messagesToSend);
             try {
@@ -82,7 +78,7 @@ public class LocalServerTest {
         final SocketChannel channel = SocketChannel.open();
         channel.configureBlocking(true);
         channel.connect(new InetSocketAddress("localhost", PORT));
-        final Protocol protocol = new LineProtocol();
+        final Protocol<Message.Base> protocol = new LineProtocol();
         int count = 0;
         for (final var message : messages) {
             final ByteBuffer bytes = protocol.encodeMessage(message);
@@ -102,7 +98,7 @@ public class LocalServerTest {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 final Collection<Message.Base> messages = new ArrayList<>();
-                final Protocol protocol = new LineProtocol();
+                final Protocol<Message.Base> protocol = new LineProtocol();
                 final ByteBuffer buffer = ByteBuffer.allocate(1024);
                 loop: while (true) {
                     final int byteCount = channel.read(buffer);

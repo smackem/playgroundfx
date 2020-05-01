@@ -1,31 +1,36 @@
 package net.smackem.fxplayground.server;
 
 import java.io.IOException;
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channel;
 import java.nio.channels.SocketChannel;
 
-public final class RemoteClient implements AutoCloseable {
+class RemoteClient<TMessage> implements AutoCloseable {
     private final SocketChannel channel;
-    private final Protocol protocol;
-    private final LocalServer server;
-    private final String remoteAddress;
+    private final Protocol<TMessage> protocol;
+    private final LocalServer<TMessage> server;
+    private final SocketAddress remoteAddress;
 
-    RemoteClient(SocketChannel channel, Protocol protocol, LocalServer server) {
+    RemoteClient(SocketChannel channel, Protocol<TMessage> protocol, LocalServer<TMessage> server) {
         this.channel = channel;
         this.protocol = protocol;
         this.server = server;
-        String remoteAddress;
+        SocketAddress remoteAddress;
         try {
-            remoteAddress = channel.getRemoteAddress().toString();
+            remoteAddress = channel.getRemoteAddress();
         } catch (IOException e) {
-            remoteAddress = "";
+            remoteAddress = null;
         }
         this.remoteAddress = remoteAddress;
     }
 
     Channel channel() {
         return this.channel;
+    }
+
+    SocketAddress address() {
+        return this.remoteAddress;
     }
 
     boolean read(ByteBuffer buffer) {
@@ -39,7 +44,7 @@ public final class RemoteClient implements AutoCloseable {
             return false;
         }
         for (int i = 0; i < count; i++) {
-            final Message.Base message = this.protocol.readByte(buffer.get(i));
+            final TMessage message = this.protocol.readByte(buffer.get(i));
             if (message != null) {
                 this.server.handleMessage(message, this);
             }
@@ -47,7 +52,7 @@ public final class RemoteClient implements AutoCloseable {
         return true;
     }
 
-    void write(Message.Base message) throws IOException {
+    void write(TMessage message) throws IOException {
         final ByteBuffer buffer = this.protocol.encodeMessage(message);
         this.channel.write(buffer);
     }

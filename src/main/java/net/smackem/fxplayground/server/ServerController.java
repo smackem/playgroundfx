@@ -39,9 +39,9 @@ public class ServerController {
                 WindowEvent.WINDOW_CLOSE_REQUEST, this::onCloseWindow);
     }
 
-    private LocalServer openServer() {
+    private LocalServer<Message.Base> openServer() {
         try {
-            return new LocalServer(PORT);
+            return new LocalServer<>(PORT, LineProtocol::new);
         } catch (IOException e) {
             e.printStackTrace();
         }

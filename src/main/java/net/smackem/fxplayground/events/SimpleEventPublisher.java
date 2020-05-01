@@ -19,13 +19,13 @@ public class SimpleEventPublisher<T> implements EventPublisher<T> {
     }
 
     @Override
-    public Flow.Subscription subscribe(Consumer<T> handler) {
+    public EventSubscription subscribe(Consumer<T> handler) {
         Objects.requireNonNull(handler);
         final SimpleEventSubscriber<T> subscriber = new SimpleEventSubscriber<>(handler);
         return internalSubscribe(subscriber);
     }
 
-    private Flow.Subscription internalSubscribe(Flow.Subscriber<? super T> subscriber) {
+    private EventSubscription internalSubscribe(Flow.Subscriber<? super T> subscriber) {
         final SimpleEventSubscription<T> subscription = new SimpleEventSubscription<>(this, subscriber);
         synchronized (this.monitor) {
             this.subscriptions.add(subscription);

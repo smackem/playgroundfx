@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-public class LineProtocol implements Protocol {
+public class LineProtocol implements Protocol<Message.Base> {
     private final ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
     @Override

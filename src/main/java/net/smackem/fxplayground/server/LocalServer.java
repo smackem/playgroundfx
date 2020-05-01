@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.net.SocketOptions;
+import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.util.ArrayList;
@@ -16,6 +18,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class LocalServer<TMessage> implements AutoCloseable {
     private final Logger log = LoggerFactory.getLogger(LocalServer.class);
@@ -26,15 +29,17 @@ public class LocalServer<TMessage> implements AutoCloseable {
     private final int port;
     private final Selector selector;
     private final ServerSocketChannel acceptChannel;
-    private final ByteBuffer buffer = ByteBuffer.allocate(16 * 1024);
+    private final ByteBuffer buffer = ByteBuffer.allocateDirect(16 * 1024);
     private final Collection<RemoteClient<TMessage>> clients = new ArrayList<>();
     private final ExecutorService ioExecutorService;
     private final Supplier<Protocol<TMessage>> protocolFactory;
+    private final Boolean tcpNoDelay;
     private volatile boolean closed;
 
-    public LocalServer(int port, Supplier<Protocol<TMessage>> protocolFactory) throws IOException {
+    public LocalServer(int port, Supplier<Protocol<TMessage>> protocolFactory, boolean tcpNoDelay) throws IOException {
         this.port = port;
         this.protocolFactory = Objects.requireNonNull(protocolFactory);
+        this.tcpNoDelay = tcpNoDelay;
         this.ioExecutorService = Executors.newSingleThreadExecutor();
         this.selector = Selector.open();
         this.acceptChannel = ServerSocketChannel.open()
@@ -42,6 +47,10 @@ public class LocalServer<TMessage> implements AutoCloseable {
         this.acceptChannel.configureBlocking(false)
                 .register(this.selector, this.acceptChannel.validOps());
         this.ioExecutorService.submit(this::run);
+    }
+
+    public LocalServer(int port, Supplier<Protocol<TMessage>> protocolFactory) throws IOException {
+        this(port, protocolFactory, false);
     }
 
     public final EventPublisher<TMessage> messageReceivedEvent() {
@@ -54,6 +63,22 @@ public class LocalServer<TMessage> implements AutoCloseable {
 
     public final EventPublisher<SocketAddress> clientDisconnectedEvent() {
         return this.clientDisconnected;
+    }
+
+    public Collection<SocketAddress> connectedClients() {
+        synchronized (this.monitor) {
+            return this.clients.stream()
+                    .map(RemoteClient::address)
+                    .collect(Collectors.toList());
+        }
+    }
+
+    public boolean isAccepting() {
+        return this.acceptChannel.isOpen();
+    }
+
+    public void stopAccepting() throws IOException {
+        this.acceptChannel.close();
     }
 
     private void run() {
@@ -104,7 +129,8 @@ public class LocalServer<TMessage> implements AutoCloseable {
     private void addClient(SocketChannel channel) {
         final RemoteClient<TMessage> client = new RemoteClient<>(channel, this.protocolFactory.get(), this);
         try {
-            channel.configureBlocking(false)
+            channel.setOption(StandardSocketOptions.TCP_NODELAY, this.tcpNoDelay)
+                    .configureBlocking(false)
                     .register(this.selector, SelectionKey.OP_READ)
                     .attach(client);
         } catch (IOException e) {

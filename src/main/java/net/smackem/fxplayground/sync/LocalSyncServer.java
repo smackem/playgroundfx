@@ -1,26 +1,24 @@
 package net.smackem.fxplayground.sync;
 
+import net.smackem.fxplayground.server.LocalServer;
+
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
 
 public class LocalSyncServer implements AutoCloseable {
 
-    private final ServerSocketChannel listenChannel;
-    private final Selector selector;
+    private static final int PORT = 6666;
+    private final LocalServer<String> tcpServer;
 
-    public LocalSyncServer(int port) throws IOException {
-        this.selector = Selector.open();
-        this.listenChannel = ServerSocketChannel.open()
-                .bind(new InetSocketAddress(port));
-        this.listenChannel.configureBlocking(false)
-                .register(this.selector, this.listenChannel.validOps());
+    public LocalSyncServer() throws IOException {
+        this.tcpServer = new LocalServer<>(PORT, SyncProtocol::new, true);
+        this.tcpServer.messageReceivedEvent().subscribe(this::onMessageReceived);
+    }
+
+    private void onMessageReceived(String s) {
     }
 
     @Override
     public void close() throws IOException {
-        this.listenChannel.close();
-        this.selector.close();
+        this.tcpServer.close();
     }
 }

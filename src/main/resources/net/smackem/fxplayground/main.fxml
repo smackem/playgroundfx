@@ -15,6 +15,7 @@
          <Button text="GeometryImage" onAction="#showStage" userData="geometryimage" />
          <Button text="Server" onAction="#showStage" userData="server/server" />
          <Button text="UDP" onAction="#showStage" userData="udp/udp" />
+         <Button text="MapGen" onAction="#showStage" userData="mapgen/mapgen" />
       </ToolBar>
    </top>
 </BorderPane>

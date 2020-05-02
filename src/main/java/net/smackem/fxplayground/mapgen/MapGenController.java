@@ -9,6 +9,8 @@ import javafx.scene.effect.GaussianBlur;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 public class MapGenController {
 
     private final Bitmap bitmap;
@@ -24,6 +26,53 @@ public class MapGenController {
     @FXML
     private void initialize() {
         render();
+    }
+
+    @FXML
+    private void onSmoothen(ActionEvent actionEvent) {
+        smoothen();
+        render();
+    }
+
+    @FXML
+    private void onExpand(ActionEvent actionEvent) {
+        expand();
+        render();
+    }
+
+    @FXML
+    private void onMap(ActionEvent actionEvent) {
+        for (int j = 0; j < 3; j++) {
+            for (int i = 0; i < 10; i++) {
+                smoothen();
+            }
+            expand();
+        }
+        render();
+    }
+
+    @FXML
+    private void onSeed(ActionEvent actionEvent) {
+        seed();
+        render();
+    }
+
+    private void seed() {
+        final double centerX = this.bitmap.width() / 2.0;
+        final double centerY = this.bitmap.height() / 2.0;
+        final double maxDistance = Math.sqrt(centerX * centerX + centerY * centerY);
+        final int halfMax = MAX_VALUE / 2;
+        final ThreadLocalRandom random = ThreadLocalRandom.current();
+        for (int y = 0; y < this.bitmap.height(); y++) {
+            for (int x = 0; x < this.bitmap.width(); x++) {
+                final double dx = (double)x - centerX;
+                final double dy = (double)y - centerY;
+                final double distance = Math.sqrt(dx * dx + dy * dy);
+                final double ratio = 1.0 - (distance / maxDistance);
+                final int maxRandom = halfMax + (int)(ratio * halfMax);
+                this.bitmap.set(x, y, random.nextInt(maxRandom));
+            }
+        }
     }
 
     private void render() {
@@ -54,8 +103,9 @@ public class MapGenController {
     private static record ColorMapping(int min, int max, Color minColor, Color maxColor) {};
 
     private static final ColorMapping[] COLOR_MAPPINGS = new ColorMapping[] {
-        new ColorMapping(0, 127, Color.hsb(240, 1, 0.5), Color.hsb(180, 0.7, 0.7)),
-        new ColorMapping(128, 210, Color.hsb(60, 0.4, 0.7), Color.hsb(120, 1, 0.3)),
+        new ColorMapping(0, 120, Color.hsb(240, 1, 0.5), Color.hsb(180, 0.7, 0.7)),
+        new ColorMapping(121, 140, Color.hsb(60, 0.4, 0.7), Color.hsb(80, 1, 0.5)),
+        new ColorMapping(141, 210, Color.hsb(80, 1, 0.5), Color.hsb(120, 1, 0.3)),
         new ColorMapping(211, 255, Color.hsb(120, 1, 0.3), Color.hsb(0, 0, 1)),
     };
 
@@ -80,8 +130,7 @@ public class MapGenController {
         return Math.max(value, 0);
     }
 
-    @FXML
-    private void onSmoothen(ActionEvent actionEvent) {
+    private void smoothen() {
         final Bitmap source = Bitmap.copyOf(this.bitmap);
         final Bitmap kernel = Bitmap.kernel(
                 0, 1, 2, 1, 0,
@@ -95,11 +144,9 @@ public class MapGenController {
                 this.bitmap.set(x, y, clamp(v));
             }
         }
-        render();
     }
 
-    @FXML
-    private void onExpand(ActionEvent actionEvent) {
+    void expand() {
         final Bitmap source = Bitmap.copyOf(this.bitmap);
         final Bitmap.MinMax minMax = source.minMax();
         final double sourceRange = minMax.max() - minMax.min();
@@ -110,6 +157,5 @@ public class MapGenController {
                 this.bitmap.set(x, y, (int) (ratio * MAX_VALUE));
             }
         }
-        render();
     }
 }

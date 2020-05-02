@@ -19,5 +19,7 @@
     <HBox AnchorPane.bottomAnchor="0" spacing="4">
         <Button minWidth="70" text="Smoothen" onAction="#onSmoothen" />
         <Button minWidth="70" text="Expand" onAction="#onExpand" />
+        <Button minWidth="70" text="Map" onAction="#onMap" />
+        <Button minWidth="70" text="Seed" onAction="#onSeed" />
     </HBox>
 </AnchorPane>

@@ -17,6 +17,7 @@
     </padding>
     <Canvas fx:id="canvas" width="640" height="480" />
     <HBox AnchorPane.bottomAnchor="0" spacing="4">
-        <Button minWidth="70" text="Some Button" onAction="#process" />
+        <Button minWidth="70" text="Smoothen" onAction="#onSmoothen" />
+        <Button minWidth="70" text="Expand" onAction="#onExpand" />
     </HBox>
 </AnchorPane>

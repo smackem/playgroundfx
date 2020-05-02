@@ -34,6 +34,25 @@ public class Bitmap {
         this.data[y * this.width + x] = value;
     }
 
+    public static record MinMax(int min, int max) {}
+
+    public MinMax minMax() {
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
+        for (int y = 0; y < this.height; y++) {
+            for (int x = 0; x < this.width; x++) {
+                final int value = get(x, y);
+                if (value < min) {
+                    min = value;
+                }
+                if (value > max) {
+                    max = value;
+                }
+            }
+        }
+        return new MinMax(min, max);
+    }
+
     public static Bitmap kernel(int... values) {
         final int length = sqrt(values.length);
         return new Bitmap(length, length, values);
@@ -54,13 +73,24 @@ public class Bitmap {
         return bitmap;
     }
 
-    public static Bitmap random(int width, int height) {
+    public static Bitmap random(int width, int height, int upperBound) {
         final ThreadLocalRandom random = ThreadLocalRandom.current();
         final Bitmap bitmap = new Bitmap(width, height);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                bitmap.set(x, y, random.nextInt(0, 256));
+                bitmap.set(x, y, random.nextInt(0, upperBound));
             }
+        }
+        return bitmap;
+    }
+
+    public static Bitmap randomDispersed(int width, int height, int value, int count) {
+        final ThreadLocalRandom random = ThreadLocalRandom.current();
+        final Bitmap bitmap = new Bitmap(width, height);
+        while (count-- > 0) {
+            final int x = random.nextInt(0, width);
+            final int y = random.nextInt(0, height);
+            bitmap.set(x, y, value);
         }
         return bitmap;
     }

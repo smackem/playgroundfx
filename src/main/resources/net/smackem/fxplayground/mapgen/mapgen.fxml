@@ -16,10 +16,14 @@
         <Insets bottom="4" left="4" right="4" top="4" />
     </padding>
     <Canvas fx:id="canvas" width="640" height="480" />
-    <HBox AnchorPane.bottomAnchor="0" spacing="4">
+    <HBox AnchorPane.bottomAnchor="0" spacing="4" alignment="BASELINE_CENTER">
         <Button minWidth="70" text="Smoothen" onAction="#onSmoothen" />
         <Button minWidth="70" text="Expand" onAction="#onExpand" />
         <Button minWidth="70" text="Map" onAction="#onMap" />
-        <Button minWidth="70" text="Seed" onAction="#onSeed" />
+        <Label text="Seed:" />
+        <Button minWidth="70" text="Island" onAction="#onSeedIsland" />
+        <Button minWidth="70" text="Mountains" onAction="#onSeedMountains" />
+        <Button minWidth="70" text="High Plains" onAction="#onSeedHighPlains" />
+        <CheckBox fx:id="renderHintCheckBox" text="Hint" />
     </HBox>
 </AnchorPane>

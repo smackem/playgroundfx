@@ -136,6 +136,7 @@ public final class ElevationMap {
             }
         }
         this.hintGeometry = lakes;
+        this.expansionRange = null;
     }
 
     public void generate() {
@@ -160,6 +161,22 @@ public final class ElevationMap {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 final int v = source.convolute(x, y, kernel);
+                this.bitmap.set(x, y, clamp(v));
+            }
+        }
+    }
+
+    public void sharpen() {
+        final int height = this.bitmap.height();
+        final int width = this.bitmap.width();
+        final Bitmap source = Bitmap.copyOf(this.bitmap);
+        final Bitmap kernel = Bitmap.kernel(
+                -1, -1, -1,
+                -1,  8, -1,
+                -1, -1, -1);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                final int v = source.get(x, y) + source.convolute(x, y, kernel);
                 this.bitmap.set(x, y, clamp(v));
             }
         }

@@ -55,6 +55,12 @@ public class MapGenController {
     }
 
     @FXML
+    public void onSharpen(ActionEvent actionEvent) {
+        this.map.sharpen();
+        render();
+    }
+
+    @FXML
     private void onExpand(ActionEvent actionEvent) {
         this.map.expand();
         render();

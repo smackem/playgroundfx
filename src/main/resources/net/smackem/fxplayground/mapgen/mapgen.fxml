@@ -18,6 +18,7 @@
     <Canvas fx:id="canvas" width="640" height="480" />
     <HBox AnchorPane.bottomAnchor="0" spacing="4" alignment="BASELINE_CENTER">
         <Button minWidth="70" text="Smoothen" onAction="#onSmoothen" />
+        <Button minWidth="70" text="Sharpen" onAction="#onSharpen" />
         <Button minWidth="70" text="Expand" onAction="#onExpand" />
         <Button minWidth="70" text="Map" onAction="#onMap" />
         <Label text="Seed:" />

@@ -24,6 +24,7 @@
         <Button minWidth="70" text="Island" onAction="#onSeedIsland" />
         <Button minWidth="70" text="Mountains" onAction="#onSeedMountains" />
         <Button minWidth="70" text="High Plains" onAction="#onSeedHighPlains" />
+        <Button minWidth="70" text="Lakes" onAction="#onSeedLakes" />
         <CheckBox fx:id="renderHintCheckBox" text="Hint" />
     </HBox>
 </AnchorPane>

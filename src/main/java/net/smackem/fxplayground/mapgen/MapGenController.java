@@ -95,6 +95,12 @@ public class MapGenController {
         render();
     }
 
+    @FXML
+    private void onSeedRiver(ActionEvent actionEvent) {
+        this.map.seedRiver();
+        render();
+    }
+
     private static record ColorMapping(int min, int max, Color minColor, Color maxColor) {};
 
     private void render() {

@@ -139,6 +139,38 @@ public final class ElevationMap {
         this.expansionRange = null;
     }
 
+    public void seedRiver() {
+        final ThreadLocalRandom random = ThreadLocalRandom.current();
+        final int height = this.bitmap.height();
+        final int width = this.bitmap.width();
+        final GeometryFactory gf = new GeometryFactory();
+        final Coordinate[] coordinates = new Coordinate[7];
+        final double stepY = (double)height / (coordinates.length - 1);
+        int pointY = 0;
+        for (int i = 0; i < coordinates.length - 1; i++) {
+            final int pointX = random.nextInt(width / 5, width - width / 5);
+            coordinates[i] = new Coordinate(pointX, pointY);
+            pointY += stepY;
+        }
+        final int pointX = random.nextInt(width / 5, width - width / 5);
+        coordinates[coordinates.length - 1] = new Coordinate(pointX, pointY);
+        final Geometry river = gf.createLineString(coordinates);
+        final int halfMax = MAX_VALUE / 2;
+        final double maxDistance = Math.sqrt(width * width + height * height);
+        final double atan1000 = Math.atan(1000);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                final Geometry point = gf.createPoint(new Coordinate(x, y));
+                final double distance = point.distance(river);
+                final double ratio = Math.atan(200 * distance / maxDistance) / atan1000;
+                final int value = (int) (ratio * halfMax);
+                this.bitmap.set(x, y, value + random.nextInt(halfMax));
+            }
+        }
+        this.hintGeometry = river;
+        this.expansionRange = null;
+    }
+
     public void generate() {
         for (int j = 0; j < 3; j++) {
             for (int i = 0; i < 10; i++) {

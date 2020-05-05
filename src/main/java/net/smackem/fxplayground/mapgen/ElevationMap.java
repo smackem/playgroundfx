@@ -144,16 +144,15 @@ public final class ElevationMap {
         final int height = this.bitmap.height();
         final int width = this.bitmap.width();
         final GeometryFactory gf = new GeometryFactory();
-        final Coordinate[] coordinates = new Coordinate[7];
-        final double stepY = (double)height / (coordinates.length - 1);
+        final Coordinate[] coordinates = new Coordinate[20];
+        final double stepY = (double)height / (coordinates.length - 2);
         int pointY = 0;
-        for (int i = 0; i < coordinates.length - 1; i++) {
-            final int pointX = random.nextInt(width / 5, width - width / 5);
+        int originX = random.nextInt(width / 3, width - width / 3);
+        for (int i = 0; i < coordinates.length; i++) {
+            final double pointX = originX + random.nextDouble(0.5, 1.5) * Math.sin(pointY + originX) * width / 10.0;
             coordinates[i] = new Coordinate(pointX, pointY);
             pointY += stepY;
         }
-        final int pointX = random.nextInt(width / 5, width - width / 5);
-        coordinates[coordinates.length - 1] = new Coordinate(pointX, pointY);
         final Geometry river = gf.createLineString(coordinates);
         final int halfMax = MAX_VALUE / 2;
         final double maxDistance = Math.sqrt(width * width + height * height);
@@ -168,7 +167,7 @@ public final class ElevationMap {
             }
         }
         this.hintGeometry = river;
-        this.expansionRange = null;
+        this.expansionRange = new Bitmap.MinMax(50, 255);
     }
 
     public void generate() {

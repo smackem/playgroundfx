@@ -90,6 +90,7 @@ public class MapGenController {
         render();
     }
 
+    @FXML
     public void onSeedLakes(ActionEvent actionEvent) {
         this.map.seedLakes();
         render();

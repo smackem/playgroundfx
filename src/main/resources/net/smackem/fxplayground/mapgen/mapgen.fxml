@@ -16,7 +16,7 @@
         <Insets bottom="4" left="4" right="4" top="4" />
     </padding>
     <Canvas fx:id="canvas" width="640" height="480" />
-    <HBox AnchorPane.bottomAnchor="0" spacing="4" alignment="BASELINE_CENTER">
+    <VBox AnchorPane.rightAnchor="0" spacing="4" alignment="CENTER_RIGHT">
         <Button minWidth="70" text="Smoothen" onAction="#onSmoothen" />
         <Button minWidth="70" text="Sharpen" onAction="#onSharpen" />
         <Button minWidth="70" text="Expand" onAction="#onExpand" />
@@ -28,5 +28,5 @@
         <Button minWidth="70" text="Lakes" onAction="#onSeedLakes" />
         <Button minWidth="70" text="River" onAction="#onSeedRiver" />
         <CheckBox fx:id="renderHintCheckBox" text="Hint" />
-    </HBox>
+    </VBox>
 </AnchorPane>

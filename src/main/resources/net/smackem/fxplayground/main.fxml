@@ -16,6 +16,7 @@
          <Button text="Server" onAction="#showStage" userData="server/server" />
          <Button text="UDP" onAction="#showStage" userData="udp/udp" />
          <Button text="MapGen" onAction="#showStage" userData="mapgen/mapgen" />
+         <Button text="MQTT" onAction="#showStage" userData="mqtt/mqtt" />
       </ToolBar>
    </top>
 </BorderPane>

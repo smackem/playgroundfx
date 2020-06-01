@@ -80,26 +80,29 @@ public final class ElevationMap {
         final int width = this.bitmap.width();
         final GeometryFactory gf = new GeometryFactory();
         final Geometry[] circles = new Geometry[8];
+        final double maxDistance = Math.sqrt(width * width + height * height);
         for (int i = 0; i < circles.length; i++) {
             circles[i] = gf.createPoint(new Coordinate(
                     random.nextInt(width),
                     random.nextInt(height)))
-                    .buffer(20 + random.nextInt(this.bitmap.height() / 4));
+                    .buffer(20 + random.nextInt(this.bitmap.height() / 6));
         }
         final Geometry plains = gf.createGeometryCollection(circles);
         final int halfMax = MAX_VALUE / 2;
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 final Geometry point = gf.createPoint(new Coordinate(x, y));
-                int value = random.nextInt(halfMax);
-                if (plains.intersects(point)) {
-                    value += halfMax;
-                }
+                final int value;
+                //if (plains.intersects(point)) {
+                    //value = halfMax + halfMax / 2 + random.nextInt(halfMax / 2);
+                //} else {
+                    value = (int) (random.nextInt(halfMax) + halfMax * (1.0 - point.distance(plains) / maxDistance));
+                //}
                 this.bitmap.set(x, y, value);
             }
         }
         this.hintGeometry = plains;
-        this.expansionRange = new Bitmap.MinMax(140, 220);
+        this.expansionRange = new Bitmap.MinMax(120, 242);
     }
 
     public void seedLakes() {

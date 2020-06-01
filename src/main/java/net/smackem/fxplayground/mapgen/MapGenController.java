@@ -7,13 +7,10 @@ import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.CheckBox;
+import javafx.scene.effect.GaussianBlur;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
-import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
-
-import java.util.concurrent.ThreadLocalRandom;
 
 public class MapGenController {
 
@@ -119,9 +116,6 @@ public class MapGenController {
         if (this.map.hintGeometry() != null && this.hintRenderingEnabled.get()) {
             renderGeometry(gc, this.map.hintGeometry());
         }
-//        final GaussianBlur blur = new GaussianBlur();
-//        blur.setRadius(3);
-//        gc.applyEffect(blur);
     }
 
     private void renderGeometry(GraphicsContext gc, Geometry geometry) {

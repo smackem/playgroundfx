@@ -6,7 +6,7 @@
     <version>1.0-SNAPSHOT</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>14</maven.compiler.release>
+        <maven.compiler.release>15</maven.compiler.release>
         <javafx.version>14</javafx.version>
         <project.runtime.mainClass>net.smackem.fxplayground.JarMain</project.runtime.mainClass>
     </properties>
@@ -30,7 +30,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>4.13.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -78,6 +78,11 @@
             <groupId>org.eclipse.paho</groupId>
             <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
             <version>1.2.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.illposed.osc</groupId>
+            <artifactId>javaosc-core</artifactId>
+            <version>0.7</version>
         </dependency>
     </dependencies>
     <build>

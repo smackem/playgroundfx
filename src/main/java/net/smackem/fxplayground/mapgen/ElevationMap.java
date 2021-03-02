@@ -194,7 +194,7 @@ public final class ElevationMap {
                 0, 1, 2, 1, 0);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                final int v = source.convolute(x, y, kernel);
+                final int v = source.convolve(x, y, kernel);
                 this.bitmap.set(x, y, clamp(v));
             }
         }
@@ -210,7 +210,7 @@ public final class ElevationMap {
                 -1, -1, -1);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                final int v = source.get(x, y) + source.convolute(x, y, kernel);
+                final int v = source.get(x, y) + source.convolve(x, y, kernel);
                 this.bitmap.set(x, y, clamp(v));
             }
         }

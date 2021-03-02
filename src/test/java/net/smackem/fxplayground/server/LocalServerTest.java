@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.*;
 
 public class LocalServerTest {
 
-    private static final int PORT = 55555;
+    private static final int PORT = 6660;
 
     @Test
     public void testLocalServerSubscription() throws IOException, InterruptedException {

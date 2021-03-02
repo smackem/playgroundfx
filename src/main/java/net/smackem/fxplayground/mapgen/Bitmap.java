@@ -95,7 +95,7 @@ public class Bitmap {
         return bitmap;
     }
 
-    public int convolute(int x, int y, Bitmap kernel) {
+    public int convolve(int x, int y, Bitmap kernel) {
         if (kernel.width > this.width) {
             throw new IllegalArgumentException("kernel width must be less than image width");
         }

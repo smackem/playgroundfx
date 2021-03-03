@@ -14,7 +14,7 @@ public class OscTestClient implements AutoCloseable {
     private final OSCPortOut outboundPort;
 
     private OscTestClient() throws IOException {
-        this.outboundPort = new OSCPortOut(new InetSocketAddress(7770));
+        this.outboundPort = new OSCPortOut(new InetSocketAddress("localhost", 7770));
         this.outboundPort.connect();
     }
 

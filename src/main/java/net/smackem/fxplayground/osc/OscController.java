@@ -50,7 +50,7 @@ public class OscController implements OSCPacketListener {
     private void render() {
         final GraphicsContext gc = this.canvas.getGraphicsContext2D();
         gc.setFill(Color.BLACK);
-        gc.fillRect(0, 0, 1000, 1000);
+        gc.fillRect(0, 0, this.canvas.getWidth(), this.canvas.getHeight());
         gc.setStroke(Color.WHITE);
         gc.setLineWidth(3);
         for (final Figure figure : this.figures) {
@@ -80,6 +80,7 @@ public class OscController implements OSCPacketListener {
         if (packet instanceof OSCMessage message) {
             log.info("message @ {}: {}", message.getAddress(), Joiner.on(", ").join(message.getArguments()));
             switch (message.getAddress()) {
+                case "/init/size" -> handleInitSize(message);
                 case "/figure/begin" -> handleFigureBegin(message);
                 case "/figure/point" -> handleFigurePoint(message);
                 case "/figure/end" -> handleFigureEnd(message);
@@ -92,6 +93,14 @@ public class OscController implements OSCPacketListener {
     @Override
     public void handleBadData(OSCBadDataEvent oscBadDataEvent) {
         log.info("bad osc data: {}", oscBadDataEvent);
+    }
+
+    private void handleInitSize(OSCMessage message) {
+        final List<Object> args = message.getArguments();
+        this.figures.clear();
+        this.canvas.setWidth((int) args.get(0));
+        this.canvas.setHeight((int) args.get(1));
+        render();
     }
 
     private void handleFigureBegin(OSCMessage message) {
